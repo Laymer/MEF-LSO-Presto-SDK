@@ -17,7 +17,7 @@ https://wiki.mef.net/display/CESG/LSO+Presto
 
 This SDK contains the following items:
 
-* COPYRIGHT - Copyright 2017 MEF Forum
+* COPYRIGHT - Copyright 2018 MEF Forum
 * LICENSE - Contains a copy of the Apache 2.0 license
 * experimental - SDK content for unpublished MEF specifications
   * yang - Contains the MEF NRP YANG modules, including the ONF Transport API yang modules on
@@ -53,10 +53,10 @@ This SDK contains the following items:
 
 ## Related Projects
 
-The MEF NRP IPS is an extension of the ONF Transport API which can be found here:
+The MEF NRP IPS is an extension of the ONF Transport API (TAPI 2.0.2) which can be found here:
 
-https://github.com/OpenNetworkingFoundation/Snowmass-ONFOpenTransport
+https://github.com/OpenNetworkingFoundation/TAPI
 
 ## Copyright
 
-Copyright 2017 MEF Forum
+Copyright 2018 MEF Forum
