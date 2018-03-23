@@ -21,12 +21,15 @@ Here are the commands to unzip after you have downloaded both the files
 * zip -s 0 Presto-SDK.zip --out Presto-SDK-full.zip
 * unzip Presto-SDK-full.zip
 
+Alternatively, you can install mininet and Opendaylight by yourself. Presto SDK R2 is not part of official distribution of Opendaylight yet,
+therefore you can download sources from github fork: https://github.com/donaldh/unimgr/tree/presto-20180307  
+
 If you need to manually start OpenDaylight, these are the steps:
 
 ### Start OpenDaylight
 
 ```sh
-% cd unimgr-karaf-0.3.0-SNAPSHOT
+% cd unimgr-karaf-0.3.1.SNAPSHOT
 % ./bin/karaf
 Apache Karaf starting up. Press Enter to open the shell now...
 100% [========================================================================]
@@ -60,22 +63,23 @@ There is a script provided for starting mininet:
 ```sh
 % cd mininet
 % sudo python create_topology.py
-*** Creating network
+** Creating network
 *** Adding controller
+Unable to contact the remote controller at 127.0.0.1:6633
 *** Adding hosts:
-h1 h2 h3 h4
+h1 h2 
 *** Adding switches:
-s1 s2 s3 s4 s5
+s1 s2 s3 
 *** Adding links:
-(h1, s1) (h2, s1) (h3, s5) (h4, s5) (s1, s2) (s1, s3) (s1, s4) (s2, s3) (s3, s4) (s3, s5) (s4, s5)
+(h1, s1) (h2, s2) (s1, s3) (s2, s3) 
 *** Configuring hosts
-h1 h2 h3 h4
+h1 h2 
 *** Starting controller
-c0
-*** Starting 5 switches
-s1 s2 s3 s4 s5 ...
+c0 
+*** Starting 3 switches
+s1 s2 s3 ...
 *** Starting CLI:
-mininet>
+mininet> 
 ```
 
 ### Register OVS with OpenDaylight
@@ -104,11 +108,21 @@ The JSON request looks like this:
 }
 ```
 
+### Configure mininet default state
+It is needed to remove some of the default flow rules from mininet switches
+```
+% sudo python clear_edge_switches.py
+```
+
+# Tutorial
+
 You can run this tutorial step with the *tutorial.sh* helper:
 
 ```sh
 % ./tutorial.sh init
 ```
+
+If you prefer to use postman, the collection with all the tutorial steps can be found in ../examples directory ``MEF-LSO-Presto-SDK-ODL.postman_collection``
 
 ## Step 1 - Get Available Topology
 
@@ -136,37 +150,60 @@ connectivity service. This JSON response is shortened for readability.
 
 ```json
 {
-  "tapi-topology:topology": [
-    {
-      "uuid": "mef:presto-nrp-topology",
-      "node": [
-        {
-          "uuid": "mef:presto-nrp-abstract-node",
-          "encap-topology": "mef:presto-nrp-topology-system",
-          "layer-protocol-name": [
-            "eth"
-          ],
-          "owned-node-edge-point": [
+    "topology": {
+        "layer-protocol-name": [
+            "ETH"
+        ],
+        "uuid": "mef:presto-nrp-topology",
+        "node": [
             {
-              "uuid": "ovs-node:s1:s1",
-              "mapped-service-interface-point": [
-                "sip:ovs-node:s1:s1"
-              ]
-            },
-            {
-              "uuid": "ovs-node:s5:s5-eth1",
-              "mapped-service-interface-point": [
-                "sip:ovs-node:s5:s5-eth1"
-              ]
+                "uuid": "mef:presto-nrp-abstract-node",
+                "layer-protocol-name": [
+                    "ETH"
+                ],
+                "encap-topology": {
+                    "topology-id": "mef:presto-nrp-topology-system"
+                },
+                "owned-node-edge-point": [
+                    {
+                        "uuid": "ovs-node:s2:s2-eth1",
+                        "layer-protocol-name": "ETH",
+                        "link-port-role": "SYMMETRIC",
+                        "mapped-service-interface-point": [
+                            {
+                                "service-interface-point-id": "sip:ovs-node:s2:s2-eth1"
+                            }
+                        ],
+                        "link-port-direction": "BIDIRECTIONAL"
+                    },
+/*[ ... CUT ...]*/
+                    {
+                        "uuid": "ovs-node:s1:s1-eth1",
+                        "layer-protocol-name": "ETH",
+                        "link-port-role": "SYMMETRIC",
+                        "mapped-service-interface-point": [
+                            {
+                                "service-interface-point-id": "sip:ovs-node:s1:s1-eth1"
+                            }
+                        ],
+                        "link-port-direction": "BIDIRECTIONAL"
+                    },
+                    {
+                        "uuid": "ovs-node:s1:s1-eth2",
+                        "layer-protocol-name": "ETH",
+                        "link-port-role": "SYMMETRIC",
+                        "mapped-service-interface-point": [
+                            {
+                                "service-interface-point-id": "sip:ovs-node:s1:s1-eth2"
+                            }
+                        ],
+                        "link-port-direction": "BIDIRECTIONAL"
+                    }
+/*[ ... CUT ...]*/
+                ]
             }
-          ]
-        }
-      ],
-      "layer-protocol-name": [
-        "eth"
-      ]
+        ]
     }
-  ]
 }
 ```
 
@@ -192,50 +229,45 @@ The JSON request looks like this:
   "input": {
     "end-point": [
       {
-        "service-interface-point": "sip:ovs-node:s1:s1-eth1",
-        "direction": "bidirectional",
-        "layer-protocol-name": "eth",
-        "nrp-cg-eth-frame-flow-spec": {
-            "ce-vlan-id-list-or-untag": {
-        		"vlan-id-list":[
-        			{
-        				"vlan-id": 300
-        			}
-        		]
-        	}
+        "service-interface-point": {
+          "service-interface-point-id" :"sip:ovs-node:s1:s1-eth1"
+          
+        },
+        "direction": "BIDIRECTIONAL",
+        "layer-protocol-name": "ETH",
+        "nrp-carrier-eth-connectivity-end-point-resource": {
+          "ce-vlan-id-list-and-untag": {
+            "vlan-id":[
+              {
+                "vlan-id": 301
+              }
+            ]
+          }
         }
       },
       {
-        "service-interface-point": "sip:ovs-node:s5:s5-eth1",
-        "direction": "bidirectional",
-        "layer-protocol-name": "eth",
-        "nrp-cg-eth-frame-flow-spec": {
-            "ce-vlan-id-list-or-untag": {
-        		"vlan-id-list":[
-        			{
-        				"vlan-id": 300
-        			}
-        		]
-        	}
+        "service-interface-point": {
+          "service-interface-point-id" :"sip:ovs-node:s2:s2-eth1"
+        },
+        "direction": "BIDIRECTIONAL",
+        "layer-protocol-name": "ETH",
+        "nrp-carrier-eth-connectivity-end-point-resource": {
+          "ce-vlan-id-list-and-untag": {
+            "vlan-id":[
+              {
+                "vlan-id": 301
+              }
+            ]
+          }
         }
       }
     ],
     "conn-constraint": {
-      "service-type": "point-to-point-connectivity",
-      "service-level": "best-effort"
+      "service-type": "POINT_TO_POINT_CONNECTIVITY",
+      "service-level": "BEST_EFFORT"
     },
-    "nrp-cg-eth-conn-serv-spec": {
-      "connection-type": "point-to-point",
-      "max-frame-size": "2000",
-      "unicast-frame-delivery": "unconditionally",
-      "broadcast-frame-delivery": "unconditionally",
-      "multicast-frame-delivery": "unconditionally",
-      "ce-vlan-id-preservation": "preserve",
-      "ce-vlan-pcp-preservation": "true",
-      "ce-vlan-dei-preservation": "true",
-      "s-vlan-pcp-preservation": "true",
-      "s-vlan-dei-preservation": "true",
-      "l2cp-address-set": "ctb"
+    "nrp-interface:nrp-carrier-eth-connectivity-resource": {
+      "max-frame-size": "2000"
     }
   }
 }
@@ -261,41 +293,52 @@ The JSON response looks like this:
 
 ```json
 {
-  "output": {
-    "service": [
-      {
-        "uuid": "cs:15d08ad16d5:6f00d57b",
-        "connection": [
-          "conn:mef:presto-nrp-abstract-node:15d08ad16d5:6f00d57b"
-        ],
-        "end-point": [
-          {
-            "local-id": "sep:UniversalId [_value=ovs-node:s5:s5-eth1]:15d08ad16d5:6f00d57b",
-            "service-interface-point": "sip:ovs-node:s5:s5-eth1",
-            "role": "symmetric",
-            "direction": "bidirectional",
-            "layer-protocol-name": "eth"
-          },
-          {
-            "local-id": "sep:UniversalId [_value=ovs-node:s1:s1-eth1]:15d08ad16d5:6f00d57b",
-            "service-interface-point": "sip:ovs-node:s1:s1-eth1",
-            "role": "symmetric",
-            "direction": "bidirectional",
-            "layer-protocol-name": "eth"
-          }
-        ],
-        "conn-constraint": {
-          "requested-capacity": {
-            "committed-information-rate": 1000,
-            "committed-burst-size": 100
-          },
-          "service-level": "best-effort",
-          "service-type": "point-to-point-connectivity"
+    "output": {
+        "service": {
+            "uuid": "cs:16253332dff:25aeaf3d",
+            "connection": [
+                "conn:mef:presto-nrp-abstract-node:16253332dff:25aeaf3d"
+            ],
+            "end-point": [
+                {
+                    "local-id": "sep:-1898313e",
+                    "service-interface-point": {
+                        "service-interface-point-id": "sip:ovs-node:s1:s1-eth1"
+                    },
+                    "direction": "BIDIRECTIONAL",
+                    "layer-protocol-name": "ETH",
+                    "nrp-interface:nrp-carrier-eth-connectivity-end-point-resource": {
+                        "ce-vlan-id-list-and-untag": {
+                            "vlan-id": [
+                                {
+                                    "vlan-id": 301
+                                }
+                            ]
+                        }
+                    },
+                    "role": "SYMMETRIC"
+                },
+                {
+                    "local-id": "sep:7d611662",
+                    "service-interface-point": {
+                        "service-interface-point-id": "sip:ovs-node:s2:s2-eth1"
+                    },
+                    "direction": "BIDIRECTIONAL",
+                    "layer-protocol-name": "ETH",
+                    "nrp-interface:nrp-carrier-eth-connectivity-end-point-resource": {
+                        "ce-vlan-id-list-and-untag": {
+                            "vlan-id": [
+                                {
+                                    "vlan-id": 301
+                                }
+                            ]
+                        }
+                    },
+                    "role": "SYMMETRIC"
+                }
+            ]
         }
-      },
-      ...
-    ]
-  }
+    }
 }
 ```
 
