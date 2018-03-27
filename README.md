@@ -22,9 +22,9 @@ This SDK contains the following items:
 * experimental - SDK content for unpublished MEF specifications
   * yang - Contains the MEF NRP YANG modules, including the ONF Transport API yang modules on
     which the MEF NRP API is based.
-  * swagger - Contains the MEF NRP Swagger specifications.
-  * examples - Contains example JSON API requests and Postman collections.
-  * tutorial - A guide for getting started with the MEF LSO Presto SDK & a packaged demo VM running OpenDaylight Unimgr and mininet.
+  * [swagger](swagger/README.md) - Contains the MEF NRP Swagger specifications.
+  * [examples](examples/README.md) - Contains example JSON API requests and Postman collections.
+  * [tutorial](tutorial/README.md) - A guide for getting started with the MEF LSO Presto SDK & a packaged demo VM running OpenDaylight Unimgr and mininet.
 * published - SDK content for published MEF specifications
 
 ## Reference Implementations

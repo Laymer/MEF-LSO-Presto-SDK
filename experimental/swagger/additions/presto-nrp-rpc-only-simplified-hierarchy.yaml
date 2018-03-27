@@ -1,7 +1,7 @@
 ---
 swagger: "2.0"
 info:
-  description: "MEF 60 (PRESTO NRP) swagger definition - RPC definitions only"
+  description: "MEF 60 (PRESTO NRP) swagger definition - RPC definitions only - with simplified class hierarchy"
   version: "2018R2"
   title: "mef-common,tapi-topology,tapi-common,tapi-connectivity,mef-common-types,nrm-connectivity,nrp-interface\
     \ API"
@@ -14,25 +14,6 @@ produces:
 - "application/json"
 - "application/xml"
 paths:
-  /operations/compute-p-2-p-path/:
-    post:
-      tags:
-      - "tapi-path-computation"
-      parameters:
-      - in: "body"
-        name: "body-param"
-        required: false
-        schema:
-          $ref: "#/definitions/tapi.path.computation.ComputeP2PPathInput"
-      responses:
-        200:
-          description: "Correct response"
-          schema:
-            $ref: "#/definitions/tapi.path.computation.ComputeP2PPathOutput"
-        201:
-          description: "No response"
-        400:
-          description: "Internal error"
   /operations/create-connectivity-service/:
     post:
       tags:
@@ -67,25 +48,6 @@ paths:
           description: "Correct response"
           schema:
             $ref: "#/definitions/tapi.connectivity.DeleteConnectivityServiceOutput"
-        201:
-          description: "No response"
-        400:
-          description: "Internal error"
-  /operations/delete-p-2-p-path/:
-    post:
-      tags:
-      - "tapi-path-computation"
-      parameters:
-      - in: "body"
-        name: "body-param"
-        required: false
-        schema:
-          $ref: "#/definitions/tapi.path.computation.DeleteP2PPathInput"
-      responses:
-        200:
-          description: "Correct response"
-          schema:
-            $ref: "#/definitions/tapi.path.computation.DeleteP2PPathOutput"
         201:
           description: "No response"
         400:
@@ -261,25 +223,6 @@ paths:
           description: "Correct response"
           schema:
             $ref: "#/definitions/tapi.topology.GetTopologyListOutput"
-        201:
-          description: "No response"
-        400:
-          description: "Internal error"
-  /operations/optimize-p-2-p-path/:
-    post:
-      tags:
-      - "tapi-path-computation"
-      parameters:
-      - in: "body"
-        name: "body-param"
-        required: false
-        schema:
-          $ref: "#/definitions/tapi.path.computation.OptimizeP2PPathInput"
-      responses:
-        200:
-          description: "Correct response"
-          schema:
-            $ref: "#/definitions/tapi.path.computation.OptimizeP2PPathOutput"
         201:
           description: "No response"
         400:
@@ -1088,15 +1031,6 @@ definitions:
           $ref: "#/definitions/mef.common.BwpFlow"
       description: "This class represents UNI-N management function. It augments the\
         \ ONF TAPI ServiceInterfacePoint class at the Ethernet frame layer. "
-  nrp.interface.ServiceAugmentation1:
-    type: "object"
-    properties:
-      nrp-carrier-eth-connectivity-resource:
-        description: "none"
-        $ref: "#/definitions/nrp.interface.NrpCarrierEthConnectivityResource"
-    x-augmentation:
-      prefix: "nrp-interface"
-      namespace: "urn:mef:yang:nrp-interface"
   nrp.interface.SipAugmentation1:
     type: "object"
     properties:
@@ -1181,16 +1115,6 @@ definitions:
         description: "Total capacity of the TopologicalEntity in MB/s. In case of\
           \ bandwidthProfile, this is expected to same as the committedInformationRate."
         $ref: "#/definitions/tapi.common.CapacityValue"
-  tapi.common.CapacityPac:
-    type: "object"
-    properties:
-      available-capacity:
-        description: "Capacity available to be assigned."
-        $ref: "#/definitions/tapi.common.Capacity"
-      total-potential-capacity:
-        description: "An optimistic view of the capacity of the TopologicalEntity\
-          \ assuming that any shared capacity is available to be taken."
-        $ref: "#/definitions/tapi.common.Capacity"
   tapi.common.CapacityUnit:
     type: "string"
     enum:
@@ -1343,21 +1267,30 @@ definitions:
     - "UNKNOWN"
   tapi.common.ServiceInterfacePoint:
     allOf:
-    - $ref: "#/definitions/tapi.common.AdminStatePac"
-    - $ref: "#/definitions/tapi.common.CapacityPac"
     - $ref: "#/definitions/tapi.common.GlobalClass"
-    - type: "object"
-      properties:
+    - properties:
+        available-capacity:
+          description: "Capacity available to be assigned."
+          $ref: "#/definitions/tapi.common.Capacity"
+        total-potential-capacity:
+          description: "An optimistic view of the capacity of the TopologicalEntity\
+            \ assuming that any shared capacity is available to be taken."
+          $ref: "#/definitions/tapi.common.Capacity"
+        operational-state:
+          description: "none"
+          $ref: "#/definitions/tapi.common.OperationalState"
+        lifecycle-state:
+          description: "none"
+          $ref: "#/definitions/tapi.common.LifecycleState"
+        administrative-state:
+          description: "none"
+          $ref: "#/definitions/tapi.common.AdministrativeState"
         layer-protocol-name:
           type: "array"
           description: "Usage of layerProtocolName [>1]  in the ServiceInterfacePoint\
             \ should be considered experimental"
           items:
             $ref: "#/definitions/tapi.common.LayerProtocolName"
-      description: "The LogicalTerminationPoint (LTP) object class encapsulates the\
-        \ termination and adaptation functions of one or more transport layers. \n\
-        \                The structure of LTP supports all transport protocols including\
-        \ circuit and packet forms."
   tapi.common.ServiceInterfacePointRef:
     type: "object"
     properties:
@@ -1371,19 +1304,6 @@ definitions:
     - "SINK"
     - "SOURCE"
     - "UNDEFINED_OR_UNKNOWN"
-  tapi.common.TerminationPac:
-    type: "object"
-    properties:
-      termination-direction:
-        description: "The overall directionality of the LP. \n                   \
-          \ - A BIDIRECTIONAL LP will have some SINK and/or SOURCE flowss.\n     \
-          \               - A SINK LP can only contain elements with SINK flows or\
-          \ CONTRA_DIRECTION_SOURCE flows\n                    - A SOURCE LP can only\
-          \ contain SOURCE flows or CONTRA_DIRECTION_SINK flows"
-        $ref: "#/definitions/tapi.common.TerminationDirection"
-      termination-state:
-        description: "Indicates whether the layer is terminated and if so how."
-        $ref: "#/definitions/tapi.common.TerminationState"
   tapi.common.TerminationState:
     type: "string"
     enum:
@@ -1993,14 +1913,174 @@ definitions:
     - $ref: "#/definitions/tapi.connectivity.ConnectivityServiceEndPoint"
   tapi.connectivity.createconnectivityservice.output.Service:
     allOf:
-    - $ref: "#/definitions/nrp.interface.ServiceAugmentation1"
-    - $ref: "#/definitions/tapi.common.AdminStatePac"
     - $ref: "#/definitions/tapi.common.GlobalClass"
-    - $ref: "#/definitions/tapi.connectivity.ConnectivityConstraint"
-    - $ref: "#/definitions/tapi.connectivity.ResilienceConstraint"
-    - $ref: "#/definitions/tapi.connectivity.TopologyConstraint"
-    - type: "object"
-      properties:
+    - properties:
+        schedule:
+          description: "none"
+          $ref: "#/definitions/tapi.common.TimeRange"
+        requested-capacity:
+          description: "none"
+          $ref: "#/definitions/tapi.common.Capacity"
+        is-exclusive:
+          type: "boolean"
+          description: "To distinguish if the resources are exclusive to the service\
+            \  - for example between EPL(isExclusive=true) and EVPL (isExclusive=false),\
+            \ or between EPLAN (isExclusive=true) and EVPLAN (isExclusive=false)"
+          default: true
+        diversity-exclusion:
+          type: "array"
+          description: "none"
+          items:
+            $ref: "#/definitions/tapi.connectivity.ConnectivityServiceRef"
+        service-level:
+          type: "string"
+          description: "An abstract value the meaning of which is mutually agreed\
+            \ – typically represents metrics such as - Class of service, priority,\
+            \ resiliency, availability"
+        service-type:
+          description: "none"
+          $ref: "#/definitions/tapi.connectivity.ServiceType"
+        cost-characteristic:
+          type: "array"
+          description: "The list of costs where each cost relates to some aspect of\
+            \ the TopologicalEntity."
+          items:
+            $ref: "#/definitions/tapi.topology.CostCharacteristic"
+        latency-characteristic:
+          type: "array"
+          description: "The effect on the latency of a queuing process. This only\
+            \ has significant effect for packet based systems and has a complex characteristic."
+          items:
+            $ref: "#/definitions/tapi.topology.LatencyCharacteristic"
+        coroute-inclusion:
+          type: "string"
+          description: "none"
+          x-path: "/tapi-common:context/tapi-connectivity:connectivity-service/tapi-connectivity:uuid"
+        diversity-policy:
+          description: "none"
+          $ref: "#/definitions/tapi.connectivity.DiversityPolicy"
+        route-objective-function:
+          description: "none"
+          $ref: "#/definitions/tapi.connectivity.RouteObjectiveFunction"
+        operational-state:
+          description: "none"
+          $ref: "#/definitions/tapi.common.OperationalState"
+        lifecycle-state:
+          description: "none"
+          $ref: "#/definitions/tapi.common.LifecycleState"
+        administrative-state:
+          description: "none"
+          $ref: "#/definitions/tapi.common.AdministrativeState"
+        nrp-carrier-eth-connectivity-resource:
+          description: "none"
+          $ref: "#/definitions/nrp.interface.NrpCarrierEthConnectivityResource"
+        is-lock-out:
+          type: "boolean"
+          description: "The resource is configured to temporarily not be available\
+            \ for use in the protection scheme(s) it is part of.\n               \
+            \     This overrides all other protection control states including forced.\n\
+            \                    If the item is locked out then it cannot be used\
+            \ under any circumstances.\n                    Note: Only relevant when\
+            \ part of a protection scheme."
+          default: false
+        max-switch-times:
+          type: "integer"
+          format: "int32"
+          description: "Used to limit the maximum swtich times. When work fault disappears\
+            \ , and traffic return to the original work path, switch counter reset."
+        restoration-coordinate-type:
+          description: " The coordination mechanism between multi-layers."
+          $ref: "#/definitions/tapi.connectivity.CoordinateType"
+        is-coordinated-switching-both-ends:
+          type: "boolean"
+          description: "Is operating such that switching at both ends of each flow\
+            \ acorss the FC is coordinated at both ingress and egress ends."
+          default: false
+        hold-off-time:
+          type: "integer"
+          format: "int32"
+          description: "This attribute indicates the time, in milliseconds, between\
+            \ declaration of signal degrade or signal fail, and the initialization\
+            \ of the protection switching algorithm."
+        is-frozen:
+          type: "boolean"
+          description: "Temporarily prevents any switch action to be taken and, as\
+            \ such, freezes the current state.\n                    Until the freeze\
+            \ is cleared, additional near-end external commands are rejected and fault\
+            \ condition changes and received APS messages are ignored.\n         \
+            \           All administrative controls of any aspect of protection are\
+            \ rejected."
+          default: false
+        wait-to-revert-time:
+          type: "integer"
+          format: "int32"
+          description: "If the protection system is revertive, this attribute specifies\
+            \ the time, in minutes, to wait after a fault clears on a higher priority\
+            \ (preferred) resource before reverting to the preferred resource."
+          default: 15
+        layer-protocol:
+          description: "Indicate which layer this resilience parameters package configured\
+            \ for."
+          $ref: "#/definitions/tapi.common.LayerProtocolName"
+        resilience-type:
+          description: "none"
+          $ref: "#/definitions/tapi.topology.ResilienceType"
+        restore-priority:
+          type: "integer"
+          format: "int32"
+          description: "none"
+        reversion-mode:
+          description: "Indcates whether the protection scheme is revertive or non-revertive."
+          $ref: "#/definitions/tapi.connectivity.ReversionMode"
+        include-node:
+          type: "array"
+          description: "This is a loose constraint - that is it is unordered and could\
+            \ be a partial list"
+          items:
+            $ref: "#/definitions/tapi.topology.NodeRef"
+        exclude-link:
+          type: "array"
+          description: "none"
+          items:
+            $ref: "#/definitions/tapi.topology.LinkRef"
+        avoid-topology:
+          type: "array"
+          description: "none"
+          items:
+            $ref: "#/definitions/tapi.topology.TopologyRef"
+        exclude-path:
+          type: "array"
+          description: "none"
+          items:
+            $ref: "#/definitions/tapi.path.computation.PathRef"
+        include-link:
+          type: "array"
+          description: "This is a loose constraint - that is it is unordered and could\
+            \ be a partial list "
+          items:
+            $ref: "#/definitions/tapi.topology.LinkRef"
+        preferred-transport-layer:
+          type: "array"
+          description: "soft constraint requested by client to indicate the layer(s)\
+            \ of transport connection that it prefers to carry the service. This could\
+            \ be same as the service layer or one of the supported server layers"
+          items:
+            $ref: "#/definitions/tapi.common.LayerProtocolName"
+        exclude-node:
+          type: "array"
+          description: "none"
+          items:
+            $ref: "#/definitions/tapi.topology.NodeRef"
+        include-topology:
+          type: "array"
+          description: "none"
+          items:
+            $ref: "#/definitions/tapi.topology.TopologyRef"
+        include-path:
+          type: "array"
+          description: "none"
+          items:
+            $ref: "#/definitions/tapi.path.computation.PathRef"
         layer-protocol-name:
           description: "none"
           $ref: "#/definitions/tapi.common.LayerProtocolName"
@@ -2018,21 +2098,180 @@ definitions:
         direction:
           description: "none"
           $ref: "#/definitions/tapi.common.ForwardingDirection"
-      description: "none"
   tapi.connectivity.createconnectivityservice.output.service.EndPoint:
     allOf:
     - $ref: "#/definitions/nrp.interface.EndPointAugmentation1"
     - $ref: "#/definitions/tapi.connectivity.ConnectivityServiceEndPoint"
   tapi.connectivity.deleteconnectivityservice.output.Service:
     allOf:
-    - $ref: "#/definitions/nrp.interface.ServiceAugmentation1"
-    - $ref: "#/definitions/tapi.common.AdminStatePac"
     - $ref: "#/definitions/tapi.common.GlobalClass"
-    - $ref: "#/definitions/tapi.connectivity.ConnectivityConstraint"
-    - $ref: "#/definitions/tapi.connectivity.ResilienceConstraint"
-    - $ref: "#/definitions/tapi.connectivity.TopologyConstraint"
-    - type: "object"
-      properties:
+    - properties:
+        schedule:
+          description: "none"
+          $ref: "#/definitions/tapi.common.TimeRange"
+        requested-capacity:
+          description: "none"
+          $ref: "#/definitions/tapi.common.Capacity"
+        is-exclusive:
+          type: "boolean"
+          description: "To distinguish if the resources are exclusive to the service\
+            \  - for example between EPL(isExclusive=true) and EVPL (isExclusive=false),\
+            \ or between EPLAN (isExclusive=true) and EVPLAN (isExclusive=false)"
+          default: true
+        diversity-exclusion:
+          type: "array"
+          description: "none"
+          items:
+            $ref: "#/definitions/tapi.connectivity.ConnectivityServiceRef"
+        service-level:
+          type: "string"
+          description: "An abstract value the meaning of which is mutually agreed\
+            \ – typically represents metrics such as - Class of service, priority,\
+            \ resiliency, availability"
+        service-type:
+          description: "none"
+          $ref: "#/definitions/tapi.connectivity.ServiceType"
+        cost-characteristic:
+          type: "array"
+          description: "The list of costs where each cost relates to some aspect of\
+            \ the TopologicalEntity."
+          items:
+            $ref: "#/definitions/tapi.topology.CostCharacteristic"
+        latency-characteristic:
+          type: "array"
+          description: "The effect on the latency of a queuing process. This only\
+            \ has significant effect for packet based systems and has a complex characteristic."
+          items:
+            $ref: "#/definitions/tapi.topology.LatencyCharacteristic"
+        coroute-inclusion:
+          type: "string"
+          description: "none"
+          x-path: "/tapi-common:context/tapi-connectivity:connectivity-service/tapi-connectivity:uuid"
+        diversity-policy:
+          description: "none"
+          $ref: "#/definitions/tapi.connectivity.DiversityPolicy"
+        route-objective-function:
+          description: "none"
+          $ref: "#/definitions/tapi.connectivity.RouteObjectiveFunction"
+        operational-state:
+          description: "none"
+          $ref: "#/definitions/tapi.common.OperationalState"
+        lifecycle-state:
+          description: "none"
+          $ref: "#/definitions/tapi.common.LifecycleState"
+        administrative-state:
+          description: "none"
+          $ref: "#/definitions/tapi.common.AdministrativeState"
+        nrp-carrier-eth-connectivity-resource:
+          description: "none"
+          $ref: "#/definitions/nrp.interface.NrpCarrierEthConnectivityResource"
+        is-lock-out:
+          type: "boolean"
+          description: "The resource is configured to temporarily not be available\
+            \ for use in the protection scheme(s) it is part of.\n               \
+            \     This overrides all other protection control states including forced.\n\
+            \                    If the item is locked out then it cannot be used\
+            \ under any circumstances.\n                    Note: Only relevant when\
+            \ part of a protection scheme."
+          default: false
+        max-switch-times:
+          type: "integer"
+          format: "int32"
+          description: "Used to limit the maximum swtich times. When work fault disappears\
+            \ , and traffic return to the original work path, switch counter reset."
+        restoration-coordinate-type:
+          description: " The coordination mechanism between multi-layers."
+          $ref: "#/definitions/tapi.connectivity.CoordinateType"
+        is-coordinated-switching-both-ends:
+          type: "boolean"
+          description: "Is operating such that switching at both ends of each flow\
+            \ acorss the FC is coordinated at both ingress and egress ends."
+          default: false
+        hold-off-time:
+          type: "integer"
+          format: "int32"
+          description: "This attribute indicates the time, in milliseconds, between\
+            \ declaration of signal degrade or signal fail, and the initialization\
+            \ of the protection switching algorithm."
+        is-frozen:
+          type: "boolean"
+          description: "Temporarily prevents any switch action to be taken and, as\
+            \ such, freezes the current state.\n                    Until the freeze\
+            \ is cleared, additional near-end external commands are rejected and fault\
+            \ condition changes and received APS messages are ignored.\n         \
+            \           All administrative controls of any aspect of protection are\
+            \ rejected."
+          default: false
+        wait-to-revert-time:
+          type: "integer"
+          format: "int32"
+          description: "If the protection system is revertive, this attribute specifies\
+            \ the time, in minutes, to wait after a fault clears on a higher priority\
+            \ (preferred) resource before reverting to the preferred resource."
+          default: 15
+        layer-protocol:
+          description: "Indicate which layer this resilience parameters package configured\
+            \ for."
+          $ref: "#/definitions/tapi.common.LayerProtocolName"
+        resilience-type:
+          description: "none"
+          $ref: "#/definitions/tapi.topology.ResilienceType"
+        restore-priority:
+          type: "integer"
+          format: "int32"
+          description: "none"
+        reversion-mode:
+          description: "Indcates whether the protection scheme is revertive or non-revertive."
+          $ref: "#/definitions/tapi.connectivity.ReversionMode"
+        include-node:
+          type: "array"
+          description: "This is a loose constraint - that is it is unordered and could\
+            \ be a partial list"
+          items:
+            $ref: "#/definitions/tapi.topology.NodeRef"
+        exclude-link:
+          type: "array"
+          description: "none"
+          items:
+            $ref: "#/definitions/tapi.topology.LinkRef"
+        avoid-topology:
+          type: "array"
+          description: "none"
+          items:
+            $ref: "#/definitions/tapi.topology.TopologyRef"
+        exclude-path:
+          type: "array"
+          description: "none"
+          items:
+            $ref: "#/definitions/tapi.path.computation.PathRef"
+        include-link:
+          type: "array"
+          description: "This is a loose constraint - that is it is unordered and could\
+            \ be a partial list "
+          items:
+            $ref: "#/definitions/tapi.topology.LinkRef"
+        preferred-transport-layer:
+          type: "array"
+          description: "soft constraint requested by client to indicate the layer(s)\
+            \ of transport connection that it prefers to carry the service. This could\
+            \ be same as the service layer or one of the supported server layers"
+          items:
+            $ref: "#/definitions/tapi.common.LayerProtocolName"
+        exclude-node:
+          type: "array"
+          description: "none"
+          items:
+            $ref: "#/definitions/tapi.topology.NodeRef"
+        include-topology:
+          type: "array"
+          description: "none"
+          items:
+            $ref: "#/definitions/tapi.topology.TopologyRef"
+        include-path:
+          type: "array"
+          description: "none"
+          items:
+            $ref: "#/definitions/tapi.path.computation.PathRef"
         layer-protocol-name:
           description: "none"
           $ref: "#/definitions/tapi.common.LayerProtocolName"
@@ -2050,21 +2289,131 @@ definitions:
         direction:
           description: "none"
           $ref: "#/definitions/tapi.common.ForwardingDirection"
-      description: "none"
   tapi.connectivity.deleteconnectivityservice.output.service.EndPoint:
     allOf:
     - $ref: "#/definitions/nrp.interface.EndPointAugmentation1"
     - $ref: "#/definitions/tapi.connectivity.ConnectivityServiceEndPoint"
   tapi.connectivity.getconnectivityservicedetails.output.Service:
     allOf:
-    - $ref: "#/definitions/nrp.interface.ServiceAugmentation1"
-    - $ref: "#/definitions/tapi.common.AdminStatePac"
     - $ref: "#/definitions/tapi.common.GlobalClass"
-    - $ref: "#/definitions/tapi.connectivity.ConnectivityConstraint"
-    - $ref: "#/definitions/tapi.connectivity.ResilienceConstraint"
-    - $ref: "#/definitions/tapi.connectivity.TopologyConstraint"
-    - type: "object"
-      properties:
+    - properties:
+        schedule:
+          description: "none"
+          $ref: "#/definitions/tapi.common.TimeRange"
+        requested-capacity:
+          description: "none"
+          $ref: "#/definitions/tapi.common.Capacity"
+        is-exclusive:
+          type: "boolean"
+          description: "To distinguish if the resources are exclusive to the service\
+            \  - for example between EPL(isExclusive=true) and EVPL (isExclusive=false),\
+            \ or between EPLAN (isExclusive=true) and EVPLAN (isExclusive=false)"
+          default: true
+        diversity-exclusion:
+          type: "array"
+          description: "none"
+          items:
+            $ref: "#/definitions/tapi.connectivity.ConnectivityServiceRef"
+        service-level:
+          type: "string"
+          description: "An abstract value the meaning of which is mutually agreed\
+            \ – typically represents metrics such as - Class of service, priority,\
+            \ resiliency, availability"
+        service-type:
+          description: "none"
+          $ref: "#/definitions/tapi.connectivity.ServiceType"
+        cost-characteristic:
+          type: "array"
+          description: "The list of costs where each cost relates to some aspect of\
+            \ the TopologicalEntity."
+          items:
+            $ref: "#/definitions/tapi.topology.CostCharacteristic"
+        latency-characteristic:
+          type: "array"
+          description: "The effect on the latency of a queuing process. This only\
+            \ has significant effect for packet based systems and has a complex characteristic."
+          items:
+            $ref: "#/definitions/tapi.topology.LatencyCharacteristic"
+        coroute-inclusion:
+          type: "string"
+          description: "none"
+          x-path: "/tapi-common:context/tapi-connectivity:connectivity-service/tapi-connectivity:uuid"
+        diversity-policy:
+          description: "none"
+          $ref: "#/definitions/tapi.connectivity.DiversityPolicy"
+        route-objective-function:
+          description: "none"
+          $ref: "#/definitions/tapi.connectivity.RouteObjectiveFunction"
+        operational-state:
+          description: "none"
+          $ref: "#/definitions/tapi.common.OperationalState"
+        lifecycle-state:
+          description: "none"
+          $ref: "#/definitions/tapi.common.LifecycleState"
+        administrative-state:
+          description: "none"
+          $ref: "#/definitions/tapi.common.AdministrativeState"
+        nrp-carrier-eth-connectivity-resource:
+          description: "none"
+          $ref: "#/definitions/nrp.interface.NrpCarrierEthConnectivityResource"
+        is-lock-out:
+          type: "boolean"
+          description: "The resource is configured to temporarily not be available\
+            \ for use in the protection scheme(s) it is part of.\n               \
+            \     This overrides all other protection control states including forced.\n\
+            \                    If the item is locked out then it cannot be used\
+            \ under any circumstances.\n                    Note: Only relevant when\
+            \ part of a protection scheme."
+          default: false
+        max-switch-times:
+          type: "integer"
+          format: "int32"
+          description: "Used to limit the maximum swtich times. When work fault disappears\
+            \ , and traffic return to the original work path, switch counter reset."
+        restoration-coordinate-type:
+          description: " The coordination mechanism between multi-layers."
+          $ref: "#/definitions/tapi.connectivity.CoordinateType"
+        is-coordinated-switching-both-ends:
+          type: "boolean"
+          description: "Is operating such that switching at both ends of each flow\
+            \ acorss the FC is coordinated at both ingress and egress ends."
+          default: false
+        hold-off-time:
+          type: "integer"
+          format: "int32"
+          description: "This attribute indicates the time, in milliseconds, between\
+            \ declaration of signal degrade or signal fail, and the initialization\
+            \ of the protection switching algorithm."
+        is-frozen:
+          type: "boolean"
+          description: "Temporarily prevents any switch action to be taken and, as\
+            \ such, freezes the current state.\n                    Until the freeze\
+            \ is cleared, additional near-end external commands are rejected and fault\
+            \ condition changes and received APS messages are ignored.\n         \
+            \           All administrative controls of any aspect of protection are\
+            \ rejected."
+          default: false
+        wait-to-revert-time:
+          type: "integer"
+          format: "int32"
+          description: "If the protection system is revertive, this attribute specifies\
+            \ the time, in minutes, to wait after a fault clears on a higher priority\
+            \ (preferred) resource before reverting to the preferred resource."
+          default: 15
+        layer-protocol:
+          description: "Indicate which layer this resilience parameters package configured\
+            \ for."
+          $ref: "#/definitions/tapi.common.LayerProtocolName"
+        resilience-type:
+          description: "none"
+          $ref: "#/definitions/tapi.topology.ResilienceType"
+        restore-priority:
+          type: "integer"
+          format: "int32"
+          description: "none"
+        reversion-mode:
+          description: "Indcates whether the protection scheme is revertive or non-revertive."
+          $ref: "#/definitions/tapi.connectivity.ReversionMode"
         layer-protocol-name:
           description: "none"
           $ref: "#/definitions/tapi.common.LayerProtocolName"
@@ -2082,21 +2431,122 @@ definitions:
         direction:
           description: "none"
           $ref: "#/definitions/tapi.common.ForwardingDirection"
-      description: "none"
+        include-node:
+          type: "array"
+          description: "This is a loose constraint - that is it is unordered and could\
+            \ be a partial list"
+          items:
+            $ref: "#/definitions/tapi.topology.NodeRef"
+        exclude-link:
+          type: "array"
+          description: "none"
+          items:
+            $ref: "#/definitions/tapi.topology.LinkRef"
+        avoid-topology:
+          type: "array"
+          description: "none"
+          items:
+            $ref: "#/definitions/tapi.topology.TopologyRef"
+        exclude-path:
+          type: "array"
+          description: "none"
+          items:
+            $ref: "#/definitions/tapi.path.computation.PathRef"
+        include-link:
+          type: "array"
+          description: "This is a loose constraint - that is it is unordered and could\
+            \ be a partial list "
+          items:
+            $ref: "#/definitions/tapi.topology.LinkRef"
+        preferred-transport-layer:
+          type: "array"
+          description: "soft constraint requested by client to indicate the layer(s)\
+            \ of transport connection that it prefers to carry the service. This could\
+            \ be same as the service layer or one of the supported server layers"
+          items:
+            $ref: "#/definitions/tapi.common.LayerProtocolName"
+        exclude-node:
+          type: "array"
+          description: "none"
+          items:
+            $ref: "#/definitions/tapi.topology.NodeRef"
+        include-topology:
+          type: "array"
+          description: "none"
+          items:
+            $ref: "#/definitions/tapi.topology.TopologyRef"
+        include-path:
+          type: "array"
+          description: "none"
+          items:
+            $ref: "#/definitions/tapi.path.computation.PathRef"
   tapi.connectivity.getconnectivityservicedetails.output.service.EndPoint:
     allOf:
     - $ref: "#/definitions/nrp.interface.EndPointAugmentation1"
     - $ref: "#/definitions/tapi.connectivity.ConnectivityServiceEndPoint"
   tapi.connectivity.getconnectivityservicelist.output.Service:
     allOf:
-    - $ref: "#/definitions/nrp.interface.ServiceAugmentation1"
-    - $ref: "#/definitions/tapi.common.AdminStatePac"
     - $ref: "#/definitions/tapi.common.GlobalClass"
-    - $ref: "#/definitions/tapi.connectivity.ConnectivityConstraint"
-    - $ref: "#/definitions/tapi.connectivity.ResilienceConstraint"
-    - $ref: "#/definitions/tapi.connectivity.TopologyConstraint"
-    - type: "object"
-      properties:
+    - properties:
+        schedule:
+          description: "none"
+          $ref: "#/definitions/tapi.common.TimeRange"
+        requested-capacity:
+          description: "none"
+          $ref: "#/definitions/tapi.common.Capacity"
+        is-exclusive:
+          type: "boolean"
+          description: "To distinguish if the resources are exclusive to the service\
+            \  - for example between EPL(isExclusive=true) and EVPL (isExclusive=false),\
+            \ or between EPLAN (isExclusive=true) and EVPLAN (isExclusive=false)"
+          default: true
+        diversity-exclusion:
+          type: "array"
+          description: "none"
+          items:
+            $ref: "#/definitions/tapi.connectivity.ConnectivityServiceRef"
+        service-level:
+          type: "string"
+          description: "An abstract value the meaning of which is mutually agreed\
+            \ – typically represents metrics such as - Class of service, priority,\
+            \ resiliency, availability"
+        service-type:
+          description: "none"
+          $ref: "#/definitions/tapi.connectivity.ServiceType"
+        cost-characteristic:
+          type: "array"
+          description: "The list of costs where each cost relates to some aspect of\
+            \ the TopologicalEntity."
+          items:
+            $ref: "#/definitions/tapi.topology.CostCharacteristic"
+        latency-characteristic:
+          type: "array"
+          description: "The effect on the latency of a queuing process. This only\
+            \ has significant effect for packet based systems and has a complex characteristic."
+          items:
+            $ref: "#/definitions/tapi.topology.LatencyCharacteristic"
+        coroute-inclusion:
+          type: "string"
+          description: "none"
+          x-path: "/tapi-common:context/tapi-connectivity:connectivity-service/tapi-connectivity:uuid"
+        diversity-policy:
+          description: "none"
+          $ref: "#/definitions/tapi.connectivity.DiversityPolicy"
+        route-objective-function:
+          description: "none"
+          $ref: "#/definitions/tapi.connectivity.RouteObjectiveFunction"
+        operational-state:
+          description: "none"
+          $ref: "#/definitions/tapi.common.OperationalState"
+        lifecycle-state:
+          description: "none"
+          $ref: "#/definitions/tapi.common.LifecycleState"
+        administrative-state:
+          description: "none"
+          $ref: "#/definitions/tapi.common.AdministrativeState"
+        nrp-carrier-eth-connectivity-resource:
+          description: "none"
+          $ref: "#/definitions/nrp.interface.NrpCarrierEthConnectivityResource"
         layer-protocol-name:
           description: "none"
           $ref: "#/definitions/tapi.common.LayerProtocolName"
@@ -2114,7 +2564,113 @@ definitions:
         direction:
           description: "none"
           $ref: "#/definitions/tapi.common.ForwardingDirection"
-      description: "none"
+        is-lock-out:
+          type: "boolean"
+          description: "The resource is configured to temporarily not be available\
+            \ for use in the protection scheme(s) it is part of.\n               \
+            \     This overrides all other protection control states including forced.\n\
+            \                    If the item is locked out then it cannot be used\
+            \ under any circumstances.\n                    Note: Only relevant when\
+            \ part of a protection scheme."
+          default: false
+        max-switch-times:
+          type: "integer"
+          format: "int32"
+          description: "Used to limit the maximum swtich times. When work fault disappears\
+            \ , and traffic return to the original work path, switch counter reset."
+        restoration-coordinate-type:
+          description: " The coordination mechanism between multi-layers."
+          $ref: "#/definitions/tapi.connectivity.CoordinateType"
+        is-coordinated-switching-both-ends:
+          type: "boolean"
+          description: "Is operating such that switching at both ends of each flow\
+            \ acorss the FC is coordinated at both ingress and egress ends."
+          default: false
+        hold-off-time:
+          type: "integer"
+          format: "int32"
+          description: "This attribute indicates the time, in milliseconds, between\
+            \ declaration of signal degrade or signal fail, and the initialization\
+            \ of the protection switching algorithm."
+        is-frozen:
+          type: "boolean"
+          description: "Temporarily prevents any switch action to be taken and, as\
+            \ such, freezes the current state.\n                    Until the freeze\
+            \ is cleared, additional near-end external commands are rejected and fault\
+            \ condition changes and received APS messages are ignored.\n         \
+            \           All administrative controls of any aspect of protection are\
+            \ rejected."
+          default: false
+        wait-to-revert-time:
+          type: "integer"
+          format: "int32"
+          description: "If the protection system is revertive, this attribute specifies\
+            \ the time, in minutes, to wait after a fault clears on a higher priority\
+            \ (preferred) resource before reverting to the preferred resource."
+          default: 15
+        layer-protocol:
+          description: "Indicate which layer this resilience parameters package configured\
+            \ for."
+          $ref: "#/definitions/tapi.common.LayerProtocolName"
+        resilience-type:
+          description: "none"
+          $ref: "#/definitions/tapi.topology.ResilienceType"
+        restore-priority:
+          type: "integer"
+          format: "int32"
+          description: "none"
+        reversion-mode:
+          description: "Indcates whether the protection scheme is revertive or non-revertive."
+          $ref: "#/definitions/tapi.connectivity.ReversionMode"
+        include-node:
+          type: "array"
+          description: "This is a loose constraint - that is it is unordered and could\
+            \ be a partial list"
+          items:
+            $ref: "#/definitions/tapi.topology.NodeRef"
+        exclude-link:
+          type: "array"
+          description: "none"
+          items:
+            $ref: "#/definitions/tapi.topology.LinkRef"
+        avoid-topology:
+          type: "array"
+          description: "none"
+          items:
+            $ref: "#/definitions/tapi.topology.TopologyRef"
+        exclude-path:
+          type: "array"
+          description: "none"
+          items:
+            $ref: "#/definitions/tapi.path.computation.PathRef"
+        include-link:
+          type: "array"
+          description: "This is a loose constraint - that is it is unordered and could\
+            \ be a partial list "
+          items:
+            $ref: "#/definitions/tapi.topology.LinkRef"
+        preferred-transport-layer:
+          type: "array"
+          description: "soft constraint requested by client to indicate the layer(s)\
+            \ of transport connection that it prefers to carry the service. This could\
+            \ be same as the service layer or one of the supported server layers"
+          items:
+            $ref: "#/definitions/tapi.common.LayerProtocolName"
+        exclude-node:
+          type: "array"
+          description: "none"
+          items:
+            $ref: "#/definitions/tapi.topology.NodeRef"
+        include-topology:
+          type: "array"
+          description: "none"
+          items:
+            $ref: "#/definitions/tapi.topology.TopologyRef"
+        include-path:
+          type: "array"
+          description: "none"
+          items:
+            $ref: "#/definitions/tapi.path.computation.PathRef"
   tapi.connectivity.getconnectivityservicelist.output.service.EndPoint:
     allOf:
     - $ref: "#/definitions/nrp.interface.EndPointAugmentation1"
@@ -2125,14 +2681,64 @@ definitions:
     - $ref: "#/definitions/tapi.connectivity.ConnectivityServiceEndPoint"
   tapi.connectivity.updateconnectivityservice.output.Service:
     allOf:
-    - $ref: "#/definitions/nrp.interface.ServiceAugmentation1"
-    - $ref: "#/definitions/tapi.common.AdminStatePac"
     - $ref: "#/definitions/tapi.common.GlobalClass"
-    - $ref: "#/definitions/tapi.connectivity.ConnectivityConstraint"
-    - $ref: "#/definitions/tapi.connectivity.ResilienceConstraint"
-    - $ref: "#/definitions/tapi.connectivity.TopologyConstraint"
-    - type: "object"
-      properties:
+    - properties:
+        schedule:
+          description: "none"
+          $ref: "#/definitions/tapi.common.TimeRange"
+        requested-capacity:
+          description: "none"
+          $ref: "#/definitions/tapi.common.Capacity"
+        is-exclusive:
+          type: "boolean"
+          description: "To distinguish if the resources are exclusive to the service\
+            \  - for example between EPL(isExclusive=true) and EVPL (isExclusive=false),\
+            \ or between EPLAN (isExclusive=true) and EVPLAN (isExclusive=false)"
+          default: true
+        diversity-exclusion:
+          type: "array"
+          description: "none"
+          items:
+            $ref: "#/definitions/tapi.connectivity.ConnectivityServiceRef"
+        service-level:
+          type: "string"
+          description: "An abstract value the meaning of which is mutually agreed\
+            \ – typically represents metrics such as - Class of service, priority,\
+            \ resiliency, availability"
+        service-type:
+          description: "none"
+          $ref: "#/definitions/tapi.connectivity.ServiceType"
+        cost-characteristic:
+          type: "array"
+          description: "The list of costs where each cost relates to some aspect of\
+            \ the TopologicalEntity."
+          items:
+            $ref: "#/definitions/tapi.topology.CostCharacteristic"
+        latency-characteristic:
+          type: "array"
+          description: "The effect on the latency of a queuing process. This only\
+            \ has significant effect for packet based systems and has a complex characteristic."
+          items:
+            $ref: "#/definitions/tapi.topology.LatencyCharacteristic"
+        coroute-inclusion:
+          type: "string"
+          description: "none"
+          x-path: "/tapi-common:context/tapi-connectivity:connectivity-service/tapi-connectivity:uuid"
+        diversity-policy:
+          description: "none"
+          $ref: "#/definitions/tapi.connectivity.DiversityPolicy"
+        route-objective-function:
+          description: "none"
+          $ref: "#/definitions/tapi.connectivity.RouteObjectiveFunction"
+        operational-state:
+          description: "none"
+          $ref: "#/definitions/tapi.common.OperationalState"
+        lifecycle-state:
+          description: "none"
+          $ref: "#/definitions/tapi.common.LifecycleState"
+        administrative-state:
+          description: "none"
+          $ref: "#/definitions/tapi.common.AdministrativeState"
         layer-protocol-name:
           description: "none"
           $ref: "#/definitions/tapi.common.LayerProtocolName"
@@ -2150,7 +2756,116 @@ definitions:
         direction:
           description: "none"
           $ref: "#/definitions/tapi.common.ForwardingDirection"
-      description: "none"
+        nrp-carrier-eth-connectivity-resource:
+          description: "none"
+          $ref: "#/definitions/nrp.interface.NrpCarrierEthConnectivityResource"
+        is-lock-out:
+          type: "boolean"
+          description: "The resource is configured to temporarily not be available\
+            \ for use in the protection scheme(s) it is part of.\n               \
+            \     This overrides all other protection control states including forced.\n\
+            \                    If the item is locked out then it cannot be used\
+            \ under any circumstances.\n                    Note: Only relevant when\
+            \ part of a protection scheme."
+          default: false
+        max-switch-times:
+          type: "integer"
+          format: "int32"
+          description: "Used to limit the maximum swtich times. When work fault disappears\
+            \ , and traffic return to the original work path, switch counter reset."
+        restoration-coordinate-type:
+          description: " The coordination mechanism between multi-layers."
+          $ref: "#/definitions/tapi.connectivity.CoordinateType"
+        is-coordinated-switching-both-ends:
+          type: "boolean"
+          description: "Is operating such that switching at both ends of each flow\
+            \ acorss the FC is coordinated at both ingress and egress ends."
+          default: false
+        hold-off-time:
+          type: "integer"
+          format: "int32"
+          description: "This attribute indicates the time, in milliseconds, between\
+            \ declaration of signal degrade or signal fail, and the initialization\
+            \ of the protection switching algorithm."
+        is-frozen:
+          type: "boolean"
+          description: "Temporarily prevents any switch action to be taken and, as\
+            \ such, freezes the current state.\n                    Until the freeze\
+            \ is cleared, additional near-end external commands are rejected and fault\
+            \ condition changes and received APS messages are ignored.\n         \
+            \           All administrative controls of any aspect of protection are\
+            \ rejected."
+          default: false
+        wait-to-revert-time:
+          type: "integer"
+          format: "int32"
+          description: "If the protection system is revertive, this attribute specifies\
+            \ the time, in minutes, to wait after a fault clears on a higher priority\
+            \ (preferred) resource before reverting to the preferred resource."
+          default: 15
+        layer-protocol:
+          description: "Indicate which layer this resilience parameters package configured\
+            \ for."
+          $ref: "#/definitions/tapi.common.LayerProtocolName"
+        resilience-type:
+          description: "none"
+          $ref: "#/definitions/tapi.topology.ResilienceType"
+        restore-priority:
+          type: "integer"
+          format: "int32"
+          description: "none"
+        reversion-mode:
+          description: "Indcates whether the protection scheme is revertive or non-revertive."
+          $ref: "#/definitions/tapi.connectivity.ReversionMode"
+        include-node:
+          type: "array"
+          description: "This is a loose constraint - that is it is unordered and could\
+            \ be a partial list"
+          items:
+            $ref: "#/definitions/tapi.topology.NodeRef"
+        exclude-link:
+          type: "array"
+          description: "none"
+          items:
+            $ref: "#/definitions/tapi.topology.LinkRef"
+        avoid-topology:
+          type: "array"
+          description: "none"
+          items:
+            $ref: "#/definitions/tapi.topology.TopologyRef"
+        exclude-path:
+          type: "array"
+          description: "none"
+          items:
+            $ref: "#/definitions/tapi.path.computation.PathRef"
+        include-link:
+          type: "array"
+          description: "This is a loose constraint - that is it is unordered and could\
+            \ be a partial list "
+          items:
+            $ref: "#/definitions/tapi.topology.LinkRef"
+        preferred-transport-layer:
+          type: "array"
+          description: "soft constraint requested by client to indicate the layer(s)\
+            \ of transport connection that it prefers to carry the service. This could\
+            \ be same as the service layer or one of the supported server layers"
+          items:
+            $ref: "#/definitions/tapi.common.LayerProtocolName"
+        exclude-node:
+          type: "array"
+          description: "none"
+          items:
+            $ref: "#/definitions/tapi.topology.NodeRef"
+        include-topology:
+          type: "array"
+          description: "none"
+          items:
+            $ref: "#/definitions/tapi.topology.TopologyRef"
+        include-path:
+          type: "array"
+          description: "none"
+          items:
+            $ref: "#/definitions/tapi.path.computation.PathRef"
   tapi.connectivity.updateconnectivityservice.output.service.EndPoint:
     allOf:
     - $ref: "#/definitions/nrp.interface.EndPointAugmentation1"
@@ -2463,13 +3178,21 @@ definitions:
               $ref: "#/definitions/tapi.topology.Topology"
   tapi.topology.InterRuleGroup:
     allOf:
-    - $ref: "#/definitions/tapi.common.CapacityPac"
     - $ref: "#/definitions/tapi.common.GlobalClass"
-    - $ref: "#/definitions/tapi.topology.RiskParameterPac"
-    - $ref: "#/definitions/tapi.topology.TransferCostPac"
-    - $ref: "#/definitions/tapi.topology.TransferTimingPac"
-    - type: "object"
-      properties:
+    - properties:
+        available-capacity:
+          description: "Capacity available to be assigned."
+          $ref: "#/definitions/tapi.common.Capacity"
+        total-potential-capacity:
+          description: "An optimistic view of the capacity of the TopologicalEntity\
+            \ assuming that any shared capacity is available to be taken."
+          $ref: "#/definitions/tapi.common.Capacity"
+        latency-characteristic:
+          type: "array"
+          description: "The effect on the latency of a queuing process. This only\
+            \ has significant effect for packet based systems and has a complex characteristic."
+          items:
+            $ref: "#/definitions/tapi.topology.LatencyCharacteristic"
         associated-node-rule-group:
           type: "array"
           description: "none"
@@ -2480,7 +3203,19 @@ definitions:
           description: "none"
           items:
             $ref: "#/definitions/tapi.topology.Rule"
-      description: "none"
+        cost-characteristic:
+          type: "array"
+          description: "The list of costs where each cost relates to some aspect of\
+            \ the TopologicalEntity."
+          items:
+            $ref: "#/definitions/tapi.topology.CostCharacteristic"
+        risk-characteristic:
+          type: "array"
+          description: "A list of risk characteristics for consideration in an analysis\
+            \ of shared risk. Each element of the list represents a specific risk\
+            \ consideration."
+          items:
+            $ref: "#/definitions/tapi.topology.RiskCharacteristic"
   tapi.topology.LatencyCharacteristic:
     type: "object"
     properties:
@@ -2507,29 +3242,39 @@ definitions:
       queing-latency-characteristic:
         type: "string"
         description: "The specific queuing latency for the traffic property."
-  tapi.topology.LayerProtocolTransitionPac:
-    type: "object"
-    properties:
-      transitioned-layer-protocol-name:
-        type: "array"
-        description: "Provides the ordered structure of layer protocol transitions\
-          \ encapsulated in the TopologicalEntity. The ordering relates to the LinkPort\
-          \ role."
-        items:
-          type: "string"
   tapi.topology.Link:
     allOf:
-    - $ref: "#/definitions/tapi.common.AdminStatePac"
-    - $ref: "#/definitions/tapi.common.CapacityPac"
     - $ref: "#/definitions/tapi.common.GlobalClass"
-    - $ref: "#/definitions/tapi.topology.LayerProtocolTransitionPac"
-    - $ref: "#/definitions/tapi.topology.RiskParameterPac"
-    - $ref: "#/definitions/tapi.topology.TransferCostPac"
-    - $ref: "#/definitions/tapi.topology.TransferIntegrityPac"
-    - $ref: "#/definitions/tapi.topology.TransferTimingPac"
-    - $ref: "#/definitions/tapi.topology.ValidationPac"
-    - type: "object"
-      properties:
+    - properties:
+        available-capacity:
+          description: "Capacity available to be assigned."
+          $ref: "#/definitions/tapi.common.Capacity"
+        total-potential-capacity:
+          description: "An optimistic view of the capacity of the TopologicalEntity\
+            \ assuming that any shared capacity is available to be taken."
+          $ref: "#/definitions/tapi.common.Capacity"
+        operational-state:
+          description: "none"
+          $ref: "#/definitions/tapi.common.OperationalState"
+        lifecycle-state:
+          description: "none"
+          $ref: "#/definitions/tapi.common.LifecycleState"
+        administrative-state:
+          description: "none"
+          $ref: "#/definitions/tapi.common.AdministrativeState"
+        transitioned-layer-protocol-name:
+          type: "array"
+          description: "Provides the ordered structure of layer protocol transitions\
+            \ encapsulated in the TopologicalEntity. The ordering relates to the LinkPort\
+            \ role."
+          items:
+            type: "string"
+        latency-characteristic:
+          type: "array"
+          description: "The effect on the latency of a queuing process. This only\
+            \ has significant effect for packet based systems and has a complex characteristic."
+          items:
+            $ref: "#/definitions/tapi.topology.LatencyCharacteristic"
         layer-protocol-name:
           type: "array"
           description: "none"
@@ -2549,8 +3294,58 @@ definitions:
             \ be BIDIRECTIONAL) or UNIDIRECTIONAL (the Link will be UNIDIRECTIONAL).\n\
             \                    Is not present in more complex cases."
           $ref: "#/definitions/tapi.common.ForwardingDirection"
-      description: "The Link object class models effective adjacency between two or\
-        \ more ForwardingDomains (FD). "
+        error-characteristic:
+          type: "string"
+          description: "Describes the degree to which the signal propagated can be\
+            \ errored.\n                    Applies to TDM systems as the errored\
+            \ signal will be propagated and not packet as errored packets will be\
+            \ discarded."
+        unavailable-time-characteristic:
+          type: "string"
+          description: "Describes the duration for which there may be no valid signal\
+            \ propagated."
+        server-integrity-process-characteristic:
+          type: "string"
+          description: "Describes the effect of any server integrity enhancement process\
+            \ on the characteristics of the TopologicalEntity."
+        delivery-order-characteristic:
+          type: "string"
+          description: "Describes the degree to which packets will be delivered out\
+            \ of sequence.\n                    Does not apply to TDM as the TDM protocols\
+            \ maintain strict order."
+        repeat-delivery-characteristic:
+          type: "string"
+          description: "Primarily applies to packet systems where a packet may be\
+            \ delivered more than once (in fault recovery for example).\n        \
+            \            It can also apply to TDM where several frames may be received\
+            \ twice due to switching in a system with a large differential propagation\
+            \ delay."
+        loss-characteristic:
+          type: "string"
+          description: "Describes the acceptable characteristic of lost packets where\
+            \ loss may result from discard due to errors or overflow.\n          \
+            \          Applies to packet systems and not TDM (as for TDM errored signals\
+            \ are propagated unless grossly errored and overflow/underflow turns into\
+            \ timing slips)."
+        cost-characteristic:
+          type: "array"
+          description: "The list of costs where each cost relates to some aspect of\
+            \ the TopologicalEntity."
+          items:
+            $ref: "#/definitions/tapi.topology.CostCharacteristic"
+        validation-mechanism:
+          type: "array"
+          description: "Provides details of the specific validation mechanism(s) used\
+            \ to confirm the presence of an intended topologicalEntity."
+          items:
+            $ref: "#/definitions/tapi.topology.ValidationMechanism"
+        risk-characteristic:
+          type: "array"
+          description: "A list of risk characteristics for consideration in an analysis\
+            \ of shared risk. Each element of the list represents a specific risk\
+            \ consideration."
+          items:
+            $ref: "#/definitions/tapi.topology.RiskCharacteristic"
   tapi.topology.LinkRef:
     allOf:
     - $ref: "#/definitions/tapi.topology.TopologyRef"
@@ -2561,14 +3356,15 @@ definitions:
           x-path: "/tapi-common:context/tapi-topology:topology/tapi-topology:link/tapi-topology:uuid"
   tapi.topology.Node:
     allOf:
-    - $ref: "#/definitions/tapi.common.AdminStatePac"
-    - $ref: "#/definitions/tapi.common.CapacityPac"
     - $ref: "#/definitions/tapi.common.GlobalClass"
-    - $ref: "#/definitions/tapi.topology.TransferCostPac"
-    - $ref: "#/definitions/tapi.topology.TransferIntegrityPac"
-    - $ref: "#/definitions/tapi.topology.TransferTimingPac"
-    - type: "object"
-      properties:
+    - properties:
+        available-capacity:
+          description: "Capacity available to be assigned."
+          $ref: "#/definitions/tapi.common.Capacity"
+        total-potential-capacity:
+          description: "An optimistic view of the capacity of the TopologicalEntity\
+            \ assuming that any shared capacity is available to be taken."
+          $ref: "#/definitions/tapi.common.Capacity"
         layer-protocol-name:
           type: "array"
           description: "none"
@@ -2593,20 +3389,90 @@ definitions:
           items:
             type: "string"
             x-path: "/tapi-common:context/tapi-topology:topology/tapi-topology:node/tapi-topology:owned-node-edge-point/tapi-topology:uuid"
-      description: "The ForwardingDomain (FD) object class models the “ForwardingDomain”\
-        \ topological component which is used to effect forwarding of transport characteristic\
-        \ information and offers the potential to enable forwarding.\n           \
-        \     At the lowest level of recursion, an FD (within a network element (NE))\
-        \ represents a switch matrix (i.e., a fabric). Note that an NE can encompass\
-        \ multiple switch matrices (FDs). "
+        operational-state:
+          description: "none"
+          $ref: "#/definitions/tapi.common.OperationalState"
+        lifecycle-state:
+          description: "none"
+          $ref: "#/definitions/tapi.common.LifecycleState"
+        administrative-state:
+          description: "none"
+          $ref: "#/definitions/tapi.common.AdministrativeState"
+        latency-characteristic:
+          type: "array"
+          description: "The effect on the latency of a queuing process. This only\
+            \ has significant effect for packet based systems and has a complex characteristic."
+          items:
+            $ref: "#/definitions/tapi.topology.LatencyCharacteristic"
+        error-characteristic:
+          type: "string"
+          description: "Describes the degree to which the signal propagated can be\
+            \ errored.\n                    Applies to TDM systems as the errored\
+            \ signal will be propagated and not packet as errored packets will be\
+            \ discarded."
+        unavailable-time-characteristic:
+          type: "string"
+          description: "Describes the duration for which there may be no valid signal\
+            \ propagated."
+        server-integrity-process-characteristic:
+          type: "string"
+          description: "Describes the effect of any server integrity enhancement process\
+            \ on the characteristics of the TopologicalEntity."
+        delivery-order-characteristic:
+          type: "string"
+          description: "Describes the degree to which packets will be delivered out\
+            \ of sequence.\n                    Does not apply to TDM as the TDM protocols\
+            \ maintain strict order."
+        repeat-delivery-characteristic:
+          type: "string"
+          description: "Primarily applies to packet systems where a packet may be\
+            \ delivered more than once (in fault recovery for example).\n        \
+            \            It can also apply to TDM where several frames may be received\
+            \ twice due to switching in a system with a large differential propagation\
+            \ delay."
+        loss-characteristic:
+          type: "string"
+          description: "Describes the acceptable characteristic of lost packets where\
+            \ loss may result from discard due to errors or overflow.\n          \
+            \          Applies to packet systems and not TDM (as for TDM errored signals\
+            \ are propagated unless grossly errored and overflow/underflow turns into\
+            \ timing slips)."
+        cost-characteristic:
+          type: "array"
+          description: "The list of costs where each cost relates to some aspect of\
+            \ the TopologicalEntity."
+          items:
+            $ref: "#/definitions/tapi.topology.CostCharacteristic"
   tapi.topology.NodeEdgePoint:
     allOf:
-    - $ref: "#/definitions/tapi.common.AdminStatePac"
-    - $ref: "#/definitions/tapi.common.CapacityPac"
     - $ref: "#/definitions/tapi.common.GlobalClass"
-    - $ref: "#/definitions/tapi.common.TerminationPac"
-    - type: "object"
-      properties:
+    - properties:
+        available-capacity:
+          description: "Capacity available to be assigned."
+          $ref: "#/definitions/tapi.common.Capacity"
+        total-potential-capacity:
+          description: "An optimistic view of the capacity of the TopologicalEntity\
+            \ assuming that any shared capacity is available to be taken."
+          $ref: "#/definitions/tapi.common.Capacity"
+        operational-state:
+          description: "none"
+          $ref: "#/definitions/tapi.common.OperationalState"
+        lifecycle-state:
+          description: "none"
+          $ref: "#/definitions/tapi.common.LifecycleState"
+        administrative-state:
+          description: "none"
+          $ref: "#/definitions/tapi.common.AdministrativeState"
+        termination-direction:
+          description: "The overall directionality of the LP. \n                 \
+            \   - A BIDIRECTIONAL LP will have some SINK and/or SOURCE flowss.\n \
+            \                   - A SINK LP can only contain elements with SINK flows\
+            \ or CONTRA_DIRECTION_SOURCE flows\n                    - A SOURCE LP\
+            \ can only contain SOURCE flows or CONTRA_DIRECTION_SINK flows"
+          $ref: "#/definitions/tapi.common.TerminationDirection"
+        termination-state:
+          description: "Indicates whether the layer is terminated and if so how."
+          $ref: "#/definitions/tapi.common.TerminationState"
         layer-protocol-name:
           description: "none"
           $ref: "#/definitions/tapi.common.LayerProtocolName"
@@ -2631,10 +3497,6 @@ definitions:
           items:
             type: "string"
             x-path: "/tapi-common:context/tapi-topology:topology/tapi-topology:node/tapi-topology:owned-node-edge-point/tapi-topology:uuid"
-      description: "The LogicalTerminationPoint (LTP) object class encapsulates the\
-        \ termination and adaptation functions of one or more transport layers.\n\
-        \                The structure of LTP supports all transport protocols including\
-        \ circuit and packet forms."
   tapi.topology.NodeRef:
     allOf:
     - $ref: "#/definitions/tapi.topology.TopologyRef"
@@ -2645,13 +3507,15 @@ definitions:
           x-path: "/tapi-common:context/tapi-topology:topology/tapi-topology:node/tapi-topology:uuid"
   tapi.topology.NodeRuleGroup:
     allOf:
-    - $ref: "#/definitions/tapi.common.CapacityPac"
     - $ref: "#/definitions/tapi.common.GlobalClass"
-    - $ref: "#/definitions/tapi.topology.RiskParameterPac"
-    - $ref: "#/definitions/tapi.topology.TransferCostPac"
-    - $ref: "#/definitions/tapi.topology.TransferTimingPac"
-    - type: "object"
-      properties:
+    - properties:
+        available-capacity:
+          description: "Capacity available to be assigned."
+          $ref: "#/definitions/tapi.common.Capacity"
+        total-potential-capacity:
+          description: "An optimistic view of the capacity of the TopologicalEntity\
+            \ assuming that any shared capacity is available to be taken."
+          $ref: "#/definitions/tapi.common.Capacity"
         inter-rule-group:
           type: "array"
           description: "none"
@@ -2673,7 +3537,25 @@ definitions:
           items:
             type: "string"
             x-path: "/tapi-common:context/tapi-topology:topology/tapi-topology:node/tapi-topology:owned-node-edge-point/tapi-topology:uuid"
-      description: "none"
+        latency-characteristic:
+          type: "array"
+          description: "The effect on the latency of a queuing process. This only\
+            \ has significant effect for packet based systems and has a complex characteristic."
+          items:
+            $ref: "#/definitions/tapi.topology.LatencyCharacteristic"
+        cost-characteristic:
+          type: "array"
+          description: "The list of costs where each cost relates to some aspect of\
+            \ the TopologicalEntity."
+          items:
+            $ref: "#/definitions/tapi.topology.CostCharacteristic"
+        risk-characteristic:
+          type: "array"
+          description: "A list of risk characteristics for consideration in an analysis\
+            \ of shared risk. Each element of the list represents a specific risk\
+            \ consideration."
+          items:
+            $ref: "#/definitions/tapi.topology.RiskCharacteristic"
   tapi.topology.NodeRuleGroupRef:
     allOf:
     - $ref: "#/definitions/tapi.topology.NodeRef"
@@ -2734,15 +3616,6 @@ definitions:
           \ TopologicalEntity."
         items:
           type: "string"
-  tapi.topology.RiskParameterPac:
-    type: "object"
-    properties:
-      risk-characteristic:
-        type: "array"
-        description: "A list of risk characteristics for consideration in an analysis\
-          \ of shared risk. Each element of the list represents a specific risk consideration."
-        items:
-          $ref: "#/definitions/tapi.topology.RiskCharacteristic"
   tapi.topology.Rule:
     allOf:
     - $ref: "#/definitions/tapi.common.LocalClass"
@@ -2800,58 +3673,6 @@ definitions:
       topology-id:
         type: "string"
         x-path: "/tapi-common:context/tapi-topology:topology/tapi-topology:uuid"
-  tapi.topology.TransferCostPac:
-    type: "object"
-    properties:
-      cost-characteristic:
-        type: "array"
-        description: "The list of costs where each cost relates to some aspect of\
-          \ the TopologicalEntity."
-        items:
-          $ref: "#/definitions/tapi.topology.CostCharacteristic"
-  tapi.topology.TransferIntegrityPac:
-    type: "object"
-    properties:
-      error-characteristic:
-        type: "string"
-        description: "Describes the degree to which the signal propagated can be errored.\n\
-          \                    Applies to TDM systems as the errored signal will be\
-          \ propagated and not packet as errored packets will be discarded."
-      unavailable-time-characteristic:
-        type: "string"
-        description: "Describes the duration for which there may be no valid signal\
-          \ propagated."
-      server-integrity-process-characteristic:
-        type: "string"
-        description: "Describes the effect of any server integrity enhancement process\
-          \ on the characteristics of the TopologicalEntity."
-      delivery-order-characteristic:
-        type: "string"
-        description: "Describes the degree to which packets will be delivered out\
-          \ of sequence.\r\n                    Does not apply to TDM as the TDM protocols\
-          \ maintain strict order."
-      repeat-delivery-characteristic:
-        type: "string"
-        description: "Primarily applies to packet systems where a packet may be delivered\
-          \ more than once (in fault recovery for example).\r\n                  \
-          \  It can also apply to TDM where several frames may be received twice due\
-          \ to switching in a system with a large differential propagation delay."
-      loss-characteristic:
-        type: "string"
-        description: "Describes the acceptable characteristic of lost packets where\
-          \ loss may result from discard due to errors or overflow.\r\n          \
-          \          Applies to packet systems and not TDM (as for TDM errored signals\
-          \ are propagated unless grossly errored and overflow/underflow turns into\
-          \ timing slips)."
-  tapi.topology.TransferTimingPac:
-    type: "object"
-    properties:
-      latency-characteristic:
-        type: "array"
-        description: "The effect on the latency of a queuing process. This only has\
-          \ significant effect for packet based systems and has a complex characteristic."
-        items:
-          $ref: "#/definitions/tapi.topology.LatencyCharacteristic"
   tapi.topology.ValidationMechanism:
     type: "object"
     properties:
@@ -2865,12 +3686,3 @@ definitions:
         type: "string"
         description: "Quality of validation (i.e. how likely is the stated validation\
           \ to be invalid)"
-  tapi.topology.ValidationPac:
-    type: "object"
-    properties:
-      validation-mechanism:
-        type: "array"
-        description: "Provides details of the specific validation mechanism(s) used\
-          \ to confirm the presence of an intended topologicalEntity."
-        items:
-          $ref: "#/definitions/tapi.topology.ValidationMechanism"
